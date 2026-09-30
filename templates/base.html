@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Topic 18 — kiểm tra dấu hiệu spam trên website với bằng chứng và gợi ý xử lý.">
+  <title>{% block title %}Topic 18 · Web Spam Inspector{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header"><div class="wrap header-inner"><a class="brand" href="{{ url_for('home') }}"><span class="brand-mark">18<span>.</span></span><span>WEB SPAM<br><strong>INSPECTOR</strong></span></a><nav class="header-nav" aria-label="Điều hướng chính"><a href="{{ url_for('community') }}">Bài viết & bình luận</a><a href="{{ url_for('home') }}">Kiểm tra spam</a><a href="{{ url_for('moderation') }}">Quản trị</a></nav></div></header>
+  <main>{% block content %}{% endblock %}</main>
+  <footer class="site-footer"><div class="wrap footer-inner"><span>TOPIC 18 <span class="muted">/</span> Công cụ hỗ trợ rà soát nội dung</span><span>Kết quả là dấu hiệu cần xem xét, không phải kết luận của Google.</span></div></footer>
+</body>
+</html>

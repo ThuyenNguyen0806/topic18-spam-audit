@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Kết quả kiểm tra · Topic 18{% endblock %}
+{% block content %}
+<section class="wrap results-hero"><a class="back" href="{{ url_for('home') }}">← Kiểm tra website khác</a><div class="eyebrow"><span class="pulse"></span> PHÂN TÍCH HOÀN TẤT</div><h1>Báo cáo <em>kiểm tra.</em></h1><p class="source">Nguồn: <strong>{{ name }}</strong></p></section>
+<section class="wrap report">
+  <div class="summary"><div class="summary-main"><span class="index">TỔNG QUAN</span><strong>{{ findings|length }}</strong><span>cảnh báo nghi vấn</span></div><div class="summary-stat"><span>TRANG ĐÃ ĐỌC</span><strong>{{ pages|length }}</strong></div><div class="summary-stat"><span>NHÓM KIỂM TRA</span><strong>04</strong></div></div>
+  {% if errors %}<div class="alert"><strong>Một số trang chưa đọc được:</strong><ul>{% for error in errors[:4] %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
+  <div class="section-heading report-heading"><span class="index">CHI TIẾT / {{ '%02d' % findings|length }}</span><h2>Các dấu hiệu tìm thấy</h2></div>
+  {% if findings %}
+  <div class="findings">{% for item in findings %}<article class="finding"><div class="finding-top"><span class="finding-id">PHÁT HIỆN {{ '%02d' % loop.index }}</span><span class="badge">Cần xem xét</span></div><h3>{{ item.type }}</h3><div class="finding-rows"><div><span class="row-label">TRANG LIÊN QUAN</span><div class="row-content">{% for url in item.pages %}<div class="url-line">{{ url }}</div>{% endfor %}</div></div><div><span class="row-label">BẰNG CHỨNG</span><p class="row-content evidence">“{{ item.evidence }}”</p></div><div><span class="row-label">VÌ SAO CẢNH BÁO</span><p class="row-content">{{ item.reason }}</p></div><div><span class="row-label">CÁCH XỬ LÝ</span><p class="row-content action">{{ item.action }}</p></div></div></article>{% endfor %}</div>
+  {% else %}<div class="empty"><span class="empty-icon">✓</span><h3>{% if pages %}Chưa tìm thấy dấu hiệu theo bộ quy tắc hiện tại{% else %}Chưa có bài viết để kiểm tra{% endif %}</h3><p>{% if pages %}Hãy thử các website mẫu còn lại hoặc kiểm tra thủ công những phần web chưa đọc được.{% else %}<a href="{{ url_for('community') }}">Tạo bài viết đầu tiên</a>, sau đó kiểm tra lại.{% endif %}</p></div>{% endif %}
+  {% if mode == 'community' %}<div class="moderation-hint"><strong>Muốn xử lý nội dung trên web này?</strong><p>Vào trang quản trị để ẩn bài viết hoặc bình luận vi phạm. Nội dung bị ẩn sẽ không còn xuất hiện trong cộng đồng hoặc lần kiểm tra tiếp theo.</p><a class="outline-button" href="{{ url_for('moderation') }}">Mở trang quản trị ↗</a></div>{% endif %}
+  <div class="method"><span class="index">LƯU Ý</span><p>Công cụ chỉ dùng quy tắc đơn giản để gợi ý kiểm tra. Website bên ngoài có thể chặn truy cập, tải nội dung bằng JavaScript hoặc không công khai bình luận. Kết quả không phản ánh trạng thái xử phạt của công cụ tìm kiếm.</p></div>
+</section>
+{% endblock %}

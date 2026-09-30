@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero wrap">
+  <div class="eyebrow"><span class="pulse"></span> CÔNG CỤ KIỂM TRA WEBSITE · BẢN DEMO</div>
+  <h1>Nhận diện dấu hiệu <em>spam</em><br>trên website của bạn.</h1>
+  <p class="lead">Kiểm tra bình luận, liên kết, nội dung trùng lặp và các trang cửa ngõ. Mỗi cảnh báo đều chỉ ra bằng chứng và cách xử lý để bạn tự đánh giá.</p>
+  <div class="hero-meta"><span>04 nhóm dấu hiệu</span><span class="meta-sep"></span><span>01 báo cáo rõ ràng</span><span class="meta-sep"></span><span>Không cần đăng nhập</span></div>
+</section>
+<section class="wrap workspace" aria-label="Bắt đầu kiểm tra">
+  <div class="section-heading"><span class="index">01 / BẮT ĐẦU</span><h2>Chọn nguồn cần kiểm tra</h2></div>
+  <div class="panel">
+    <div class="tabs" role="tablist" aria-label="Nguồn kiểm tra">
+      <button id="tab-sample" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="sample-panel">Website mẫu <span class="tab-note">/ demo nhanh</span></button>
+      <button id="tab-url" class="tab" type="button" role="tab" aria-selected="false" aria-controls="url-panel">Nhập URL <span class="tab-note">/ website công khai</span></button>
+    </div>
+    {% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+    <form id="sample-panel" role="tabpanel" aria-labelledby="tab-sample" action="{{ url_for('check') }}" method="post" class="panel-body">
+      <input type="hidden" name="mode" value="sample"><label for="sample">CHỌN TÌNH HUỐNG</label>
+      <select name="sample" id="sample">{% for key, sample in samples.items() %}<option value="{{ key }}">{{ sample.name }}</option>{% endfor %}</select>
+      <p class="field-help">Có một mẫu bình thường và bốn mẫu minh họa từng loại dấu hiệu.</p>
+      <button class="submit" type="submit">Phân tích website mẫu <span aria-hidden="true">↗</span></button>
+    </form>
+    <form id="url-panel" role="tabpanel" aria-labelledby="tab-url" action="{{ url_for('check') }}" method="post" class="panel-body" hidden>
+      <input type="hidden" name="mode" value="url"><label for="url">ĐỊA CHỈ WEBSITE</label>
+      <input type="url" name="url" id="url" placeholder="https://example.com/bai-viet" value="{{ submitted_url|default('') }}" maxlength="2000" required>
+      <p class="field-help">Phân tích trang được nhập và tối đa 5 trang liên kết cùng miền. Chỉ sử dụng URL công khai mà bạn có quyền kiểm tra.</p>
+      <button class="submit" type="submit">Kiểm tra URL <span aria-hidden="true">↗</span></button>
+    </form>
+  </div>
+</section>
+<section class="wrap own-site"><div class="own-site-copy"><span class="index">WEB CỘNG ĐỒNG + BỘ KIỂM TRA</span><h2>Tự đăng bài, bình luận<br>và kiểm tra ngay trên web.</h2><p>Viết bài hoặc thêm bình luận trong khu vực cộng đồng. Sau đó bấm kiểm tra để xem dữ liệu thực tế vừa tạo có dấu hiệu spam hay không.</p><div class="own-site-actions"><a class="submit" href="{{ url_for('community') }}">Đến khu vực đăng bài <span aria-hidden="true">↗</span></a><form action="{{ url_for('check') }}" method="post"><input type="hidden" name="mode" value="community"><button class="outline-button" type="submit">Kiểm tra web này</button></form></div></div><div class="own-site-illustration" aria-hidden="true"><div class="mini-post"><span>✎ &nbsp; BÀI VIẾT</span><div class="mini-line"></div><div class="mini-line short"></div><div class="mini-comment">↳ &nbsp; Bình luận mới</div></div><span class="scan-label">↗ &nbsp; KIỂM TRA 4 LOẠI SPAM</span></div></section>
+<section class="wrap types"><div class="section-heading"><span class="index">02 / PHẠM VI</span><h2>Web sẽ tìm những gì?</h2></div>
+  <div class="type-grid">
+    <article class="type-card"><span class="type-num">01</span><div class="type-icon">💬</div><h3>Comment spam</h3><p>Bình luận quảng cáo, chèn link hoặc đăng lặp lại.</p></article>
+    <article class="type-card"><span class="type-num">02</span><div class="type-icon">↗</div><h3>Link spam</h3><p>Liên kết cùng đích xuất hiện dày đặc với anchor quảng cáo.</p></article>
+    <article class="type-card"><span class="type-num">03</span><div class="type-icon">▤</div><h3>Nội dung trùng lặp</h3><p>Nhiều URL đăng nội dung chính gần như giống nhau.</p></article>
+    <article class="type-card"><span class="type-num">04</span><div class="type-icon">⌘</div><h3>Doorway pages</h3><p>Trang đổi tên địa điểm nhưng nội dung và đích đến tương tự.</p></article>
+  </div>
+</section>
+<section class="wrap note"><div class="note-mark">i</div><p><strong>Cách đọc kết quả</strong><br>Đây là bộ quy tắc gợi ý để rà soát thủ công. Không phát hiện được cảnh báo không có nghĩa website hoàn toàn sạch; cảnh báo cũng không chứng minh Google đã xử phạt.</p></section>
+<script>
+  const tabs = [document.getElementById('tab-sample'), document.getElementById('tab-url')];
+  const panels = [document.getElementById('sample-panel'), document.getElementById('url-panel')];
+  function activate(i) { tabs.forEach((tab, j) => {tab.classList.toggle('active', i === j); tab.setAttribute('aria-selected', String(i === j)); tab.tabIndex = i === j ? 0 : -1; panels[j].hidden = i !== j;}); }
+  tabs.forEach((tab, i) => tab.addEventListener('click', () => activate(i)));
+  tabs.forEach((tab, i) => tab.addEventListener('keydown', e => {if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {e.preventDefault(); const j = e.key === 'ArrowRight' ? 1 - i : 1 - i; activate(j); tabs[j].focus();}}));
+  {% if submitted_url %}activate(1);{% endif %}
+</script>
+{% endblock %}
