@@ -13,8 +13,6 @@ from bs4 import BeautifulSoup
 MAX_BYTES = 900_000
 MAX_PAGES = 6
 USER_AGENT = "Topic18ClassDemo/1.0 (bounded public page checker)"
-MARKDOWN_LINK_RE = re.compile(r"\[([^\]\n]+)\]\((https?://[^\s<>]+?)\)", re.I)
-TEXT_URL_RE = re.compile(r"https?://[^\s<>\"'\]\)]+", re.I)
 DOH_RESOLVERS = (("1.1.1.1", "cloudflare-dns.com", "/dns-query"), ("8.8.8.8", "dns.google", "/resolve"))
 
 
@@ -128,33 +126,12 @@ def parse_page(url, content):
     referenced_paths = re.findall(r"(?<![\w/])/(?:[a-zA-Z0-9_-]+/)+[a-zA-Z0-9_-]+", soup.get_text(" ", strip=True))[:8]
     title = soup.title.get_text(" ", strip=True) if soup.title else url
     selectors = ".comment, .comment-content, .comment-body, [itemprop='commentText'], #comments article"
-    comment_nodes = soup.select(selectors)
-    # Nested comment wrappers must not count the same comment twice.
-    comment_ids = {id(node) for node in comment_nodes}
-    comments = [node.get_text(" ", strip=True)[:2000] for node in comment_nodes
-                if not any(id(parent) in comment_ids for parent in node.parents)][:40]
+    comments = [node.get_text(" ", strip=True)[:500] for node in soup.select(selectors)[:40]]
     for node in soup.select("script, style, nav, footer, header, aside, form, .comment, .comment-content, .comment-body, #comments"):
         node.decompose()
     main = soup.select_one("main, article, [role='main']") or soup.body or soup
     text = main.get_text(" ", strip=True)[:12_000]
     links = [{"text": a.get_text(" ", strip=True)[:100], "href": urljoin(url, a.get("href", ""))} for a in main.select("a[href]")[:120]]
-    # Escaped Markdown and bare URLs are common in user-generated posts.
-    # Read text outside anchors only, so real HTML links are not counted twice.
-    for node in main.find_all(string=True):
-        if node.find_parent("a") or len(links) >= 120:
-            continue
-        value = str(node)
-        for match in MARKDOWN_LINK_RE.finditer(value):
-            if len(links) >= 120:
-                break
-            links.append({"text": match.group(1)[:100], "href": match.group(2), "source": "markdown"})
-        remaining = MARKDOWN_LINK_RE.sub("", value)
-        for match in TEXT_URL_RE.finditer(remaining):
-            if len(links) >= 120:
-                break
-            # Use local context, not promotional words elsewhere on the page.
-            context = remaining[max(0, match.start() - 80):match.end() + 40]
-            links.append({"text": context[:100], "href": match.group().rstrip(".,;!?"), "source": "text"})
     return {"url": url, "title": title[:180], "text": text, "comments": comments, "links": links, "referenced_paths": referenced_paths}
 
 
