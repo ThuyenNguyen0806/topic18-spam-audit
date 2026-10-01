@@ -132,6 +132,24 @@ def parse_page(url, content):
     main = soup.select_one("main, article, [role='main']") or soup.body or soup
     text = main.get_text(" ", strip=True)[:12_000]
     links = [{"text": a.get_text(" ", strip=True)[:100], "href": urljoin(url, a.get("href", ""))} for a in main.select("a[href]")[:120]]
+    # Đọc thêm Markdown và URL dạng chữ, không đếm lại link HTML.
+    markdown_re = re.compile(r"\[([^\]\n]+)\]\((https?://[^\s<>]+?)\)", re.I)
+    plain_url_re = re.compile(r"https?://[^\s<>\"'\]\)]+", re.I)
+    for node in main.find_all(string=True):
+        if node.find_parent("a"):
+            continue
+        value = str(node)
+        for match in markdown_re.finditer(value):
+            if len(links) >= 120:
+                break
+            links.append({"text": match.group(1)[:100], "href": match.group(2)})
+        remaining = markdown_re.sub("", value)
+        for match in plain_url_re.finditer(remaining):
+            if len(links) >= 120:
+                break
+            context = remaining[max(0, match.start() - 80):match.start()]
+            links.append({"text": context.strip()[-100:],
+                          "href": match.group().rstrip(".,;!?")})
     return {"url": url, "title": title[:180], "text": text, "comments": comments, "links": links, "referenced_paths": referenced_paths}
 
 
